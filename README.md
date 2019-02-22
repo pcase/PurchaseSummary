@@ -1,10 +1,10 @@
 # PurchaseSummary
 React Native purchase summary app. 
 Key elements:
--Pickup savings - uses a Modal to display a pickup message. Had to use a Close button, but ideally you should close the
+Pickup savings uses a Modal to display a pickup message. Had to use a Close button, but ideally you should close the
 Modal by clicking outside of it.
--See item details - expands to show an item image and text. 
--Apply Promo Code - expands to show a promo code field.
+See item details expands to show an item image and text. 
+Apply Promo Code expands to show a promo code field.
 
 Known issues:
 1. The Pickup savings modal has a Close button. It should be closed by clicking outside of it.
