@@ -5,8 +5,8 @@
 import React, {Component} from 'react';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import {AppRegistry, Platform, StyleSheet, Text, TextInput, FlatList, View, Button, Image, Linking, Modal, LayoutAnimation, UIManager, TouchableOpacity, TouchableHighlight} from 'react-native';
-import ListItem from './components/ListItem';
+import {AppRegistry, Platform, StyleSheet, Text, TextInput, FlatList, View, Button, Image, Linking, Modal, LayoutAnimation, UIManager, TouchableOpacity, TouchableHighlight, TouchableWithoutFeedback} from 'react-native';
+import ListItem from './components/ListItem'; 
 import { connect } from 'react-redux';
 import { addPlace } from './actions/place';
 import data from './price.json';
@@ -26,14 +26,18 @@ class PurchaseSummary extends Component {
         super();
 		
         this.icons = {    
-            'up'    : require('./assets/images/plus.png'),
-            'down'  : require('./assets/images/minus.jpg'),
+            'plus'    : require('./assets/images/plus.png'),
+            'minus'  : require('./assets/images/minus.jpg'),
 			'item'	: require('./assets/images/drone.jpeg')
         };
  
-        this.state = { onLayoutHeight: 0, modifiedHeight: 0, expanded: false }
- 	   	this.state.modalVisible = false
- 	   	this.state.estimatedTotal = this.getTotal().toString()
+        //this.state = { onLayoutHeight: 0, modifiedHeight: 0, expanded: false }
+		this.state.onLayoutHeight = 0;
+		this.state.modifiedHeight = 0;
+		this.state.expanded = false;
+ 	   	this.state.modalVisible = false;
+ 	   	this.state.estimatedTotal = this.getTotal().toString();
+		this.state.discountApplied = false;
 		
         if( Platform.OS === 'android' ) {
           UIManager.setLayoutAnimationEnabledExperimental( true )
@@ -44,16 +48,21 @@ class PurchaseSummary extends Component {
 	 	code: '',
 	   	estimatedTotal: '',
 	   	places: [],
-		modalVisible: false
+		modalVisible: false,
+		onLayoutHeight: 0,
+		modifiedHeight: 0,
+		expanded: false,
+		discountApplied: false
 	}
 
 	codeSubmitHandler = () => {
 	   if (this.state.code.trim() === '') {
 	      return;
 	   }
-	   if (this.state.code === 'DISCOUNT') {
+	   if (this.state.code === 'DISCOUNT' && !this.state.discountApplied) {
 		   this.state.  estimatedTotal = this.getDiscount().toString();
 	   	   this.props.add(this.state.  estimatedTotal);
+		   this.state.discountApplied = true;
    	   }
 	}
 	
@@ -108,13 +117,14 @@ class PurchaseSummary extends Component {
       var modalBackgroundStyle = {
         backgroundColor: 'rgba(0, 0, 0, 0.5)'
       };
+	  
 	  var innerContainerTransparentStyle = {backgroundColor: '#fff', padding: 20};
 
 	  let itemImage = this.icons['item'];
-	  let icon = this.icons['up'];
+	  let icon = this.icons['plus'];
 
       if (this.state.expanded){
-          icon = this.icons['down'];   
+          icon = this.icons['minus'];   
       }
 	  
     return ( 
@@ -126,61 +136,67 @@ class PurchaseSummary extends Component {
         	  visible={this.state.modalVisible}
         	  onRequestClose={() => this.setModalVisible(false)}
         	>
+      			<TouchableWithoutFeedback onPress={this.setModalVisible.bind(this, false)}>
+          			<View style={styles.modalOverlay} />
+        		</TouchableWithoutFeedback>
+			  
         		<View style={[styles.container, modalBackgroundStyle]}>
           			<View style={innerContainerTransparentStyle}>
             			<Text>{pickupText}</Text>
-            			<Button title='Close'
-              			onPress={this.setModalVisible.bind(this, false)}/>
           			</View>
         	  	</View>
       	  	</Modal>
-      
-			<Text style = {styles.wordBold}>
-			  Purchase Summary{"\n"}{"\n"}
-			</Text>
 			
-			<Text>
-         	  Subtotal
-      		</Text>
-
-			<Text style={{alignSelf: 'flex-end'}}>
-			  {data.items[0].price}{"\n"}{"\n"}
-			</Text>  
+			 <View style = {{flexDirection:'row', justifyContent: 'space-between'}}>
+				<Text>
+         	  		Subtotal
+      			</Text>
+				<Text>
+	  				${data.items[0].price}{"\n"}{"\n"}
+				</Text>  
+			 </View>
       
-			<Text style={{textDecorationLine: 'underline'}} onPress={this._handleButtonPress}>
-         	  Pickup savings
-      		</Text>
+	  		<View style = {{flexDirection:'row', justifyContent: 'space-between'}}>
+				<Text style={{textDecorationLine: 'underline'}} onPress={this._handleButtonPress}>
+         	  	  	Pickup savings
+      			</Text>
 			  
-			<Text style={{alignSelf: 'flex-end', color: 'red'}}>
-			  -{data.items[0].savings}{"\n"}{"\n"}
-			</Text>    
-      		  
-      		<Text>
-         	  Est taxes & fees{"\n"}
-	   	  	  (Based on 95070)
-      	  	</Text>
+				<Text style={{alignSelf: 'flex-end', color: 'red'}}>
+			  	  -${data.items[0].savings}{"\n"}{"\n"}
+				</Text>    
+      		</View>
+			 
+			<View style = {{flexDirection:'row', justifyContent: 'space-between'}}>    
+      			<Text>
+         	  	  Est. taxes & fees{"\n"}
+	   	  	  	  (Based on 95070)
+      	  		</Text>
       
-			<Text style={{alignSelf: 'flex-end'}}>
-			  {data.items[0].taxes}{"\n"}{"\n"}
-			</Text>   
-			  
-      	  	<Text>
-	   	 	  {"\n"}
-         	  Est total
-      	  	</Text>
+				<Text style={{alignSelf: 'flex-end'}}>
+			  	  ${data.items[0].taxes}{"\n"}{"\n"}
+				</Text>   
+			</View>  
+			
+			<View style = {{flexDirection:'row', justifyContent: 'space-between'}}>    
+      	  		<Text style={styles.wordBoldLarge}>
+         	  	Est. total
+      	  		</Text>
 			  	    
-			<Text style={{alignSelf: 'flex-end'}}>
-			  {this.state.estimatedTotal}{"\n"}{"\n"}
-			</Text>     
-		  		  
+				<Text style={{alignSelf: 'flex-end'}}>
+			  		<Text style={styles.wordBoldLarge}>
+			  		${this.state.estimatedTotal}{"\n"}
+			  	  </Text>
+				</Text> 
+			</View>    
+						  
            <View style = { styles.btnTextHolder }>
                <TouchableOpacity activeOpacity = { 0.0 } onPress = { this.changeLayout } style = { styles.Btn }>
-			    <View style = {{flexDirection:'row', flexWrap:'wrap'}}>
+			    <View style = {{flexDirection:'row', justifyContent: 'space-between'}}>
                		<Text style={styles.btnText}>See item details</Text>
           	   		<Image
               			style={styles.buttonImage}
               			source={icon}>
-          	   			</Image>
+          	   		</Image>
 			    </View>
                </TouchableOpacity>
                <View style = {{height: this.state.modifiedHeight, overflow: 'hidden'}}>
@@ -194,11 +210,11 @@ class PurchaseSummary extends Component {
                    	 </Text>
 				  </View>
                </View>
-            </View>
+            </View>	   
 			  					  	  
            <View style = { styles.btnTextHolder }>
                <TouchableOpacity activeOpacity = { 0.0 } onPress = { this.changeLayout } style = { styles.Btn }>
-				 <View style = {{flexDirection:'row', flexWrap:'wrap'}}>
+				 <View style = {{flexDirection:'row', justifyContent: 'space-between'}}>
                	 	  <Text style={styles.btnText}>Apply promo code</Text>
           	   	 	  <Image
               			style={styles.buttonImage}
@@ -210,12 +226,12 @@ class PurchaseSummary extends Component {
   		 	      <View style = { styles.inputContainer }>
   		 	        <TextInput
   		 	          placeholder = "Promo code"
-  		 	          style = { styles.placeInput }
+  		 	          style = { styles.promoInput }
   		 	          value = { this.state.code }
   		 	          onChangeText = { this.estimatedTotalChangeHandler }
   		 	        ></TextInput>
   		 	        <Button title = 'Apply' 
-  		 	          style = { styles.placeButton }
+  		 	          style = { styles.promoButton }
   		 	          onPress = { this.codeSubmitHandler }
   		 	        />
   		 	        </View>
@@ -230,6 +246,14 @@ class PurchaseSummary extends Component {
 }
 
 const styles = StyleSheet.create ({
+    modalOverlay: {
+       position: 'absolute',
+       top: 0,
+       bottom: 0,
+       left: 0,
+       right: 0,
+       backgroundColor: 'rgba(0,0,0,0.5)'
+     },
     container2: {
       paddingTop: 30,
       justifyContent: 'flex-start',
@@ -238,14 +262,43 @@ const styles = StyleSheet.create ({
     inputContainer: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
-      width: '100%'
+      alignItems: 'stretch',
+      width: '90%',
+	  height: 120
     },
-    placeInput: {
+    navBar: {
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      alignItems: 'center',
+      backgroundColor: '#F5FCFF',
+    },
+    leftContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'flex-start',
+      backgroundColor: '#F5FCFF'
+    },
+    rightContainer: {
+      flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      alignItems: 'center',
+      backgroundColor: '#F5FCFF',
+    },
+    promoInput: {
       width: '70%'
     },
-    placeButton: {
-      width: '30%'
+    promoButton: {
+    backgroundColor: 'blue',
+    borderColor: 'white',
+    borderWidth: 1,
+    borderRadius: 12,
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
+    overflow: 'hidden',
+    padding: 12,
+    textAlign:'center'
     },
     listContainer: {
       width: '100%'
@@ -258,37 +311,20 @@ const styles = StyleSheet.create ({
       paddingTop: 20,
 	  backgroundColor: '#F5FCFF'
    },
+   row: {
+       flexDirection: 'row',
+       alignItems: 'center',
+       backgroundColor: '#F5FCFF',
+   },
    text: {
-     fontSize: 17,
+     fontSize: 20,
      color: 'black',
      padding: 10
    },
-   textLeft: {
-      color: 'black',
-	  textAlign: 'left',
-	  alignSelf: 'stretch'
-   },
-   textRight: {
-      color: 'black',
-	  textAlign: 'right',
-	  alignSelf: 'stretch'
-   },
-   capitalLetter: {
-      color: 'red',
-      fontSize: 20
-   },
-   wordBold: {
+   wordBoldLarge: {
+	  fontSize: 30,
       fontWeight: 'bold',
       color: 'black'
-   },
-   italicText: {
-      color: '#37859b',
-      fontStyle: 'italic'
-   },
-   textShadow: {
-      textShadowColor: 'red',
-      textShadowOffset: { width: 2, height: 2 },
-      textShadowRadius : 5
    },
    btnText: {
        textAlign: 'left',
@@ -299,10 +335,6 @@ const styles = StyleSheet.create ({
    btnTextHolder: {
        borderWidth: 1,
        borderColor: '#F5FCFF'
-   },
-   Btn: {
-       padding: 10,
-       backgroundColor: '#F5FCFF'
    },
    buttonImage : {
        width   : 30,
