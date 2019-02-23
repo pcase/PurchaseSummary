@@ -5,7 +5,7 @@
 import React, {Component} from 'react';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
-import {AppRegistry, Platform, StyleSheet, Text, TextInput, FlatList, View, Button, Image, Linking, Modal, LayoutAnimation, UIManager, TouchableOpacity, TouchableHighlight, TouchableWithoutFeedback} from 'react-native';
+import {AppRegistry, Platform, StyleSheet, Text, TextInput, View, Button, Image, Modal, FlatList, LayoutAnimation, UIManager, TouchableOpacity, TouchableWithoutFeedback} from 'react-native';
 import ListItem from './components/ListItem'; 
 import { connect } from 'react-redux';
 import { addPlace } from './actions/place';
@@ -31,7 +31,6 @@ class PurchaseSummary extends Component {
 			'item'	: require('./assets/images/drone.jpeg')
         };
  
-        //this.state = { onLayoutHeight: 0, modifiedHeight: 0, expanded: false }
 		this.state.onLayoutHeight = 0;
 		this.state.modifiedHeight = 0;
 		this.state.expanded = false;
@@ -286,19 +285,21 @@ const styles = StyleSheet.create ({
       backgroundColor: '#F5FCFF',
     },
     promoInput: {
-      width: '70%'
+      width: '70%',
+      borderColor: 'black',
+      borderWidth: 1
     },
     promoButton: {
-    backgroundColor: 'blue',
-    borderColor: 'white',
-    borderWidth: 1,
-    borderRadius: 12,
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    overflow: 'hidden',
-    padding: 12,
-    textAlign:'center'
+    	backgroundColor: 'blue',
+    	borderColor: 'black',
+    	borderWidth: 1,
+    	borderRadius: 12,
+    	color: 'white',
+    	fontSize: 24,
+    	fontWeight: 'bold',
+    	overflow: 'hidden',
+    	padding: 12,
+    	textAlign:'center'
     },
     listContainer: {
       width: '100%'
